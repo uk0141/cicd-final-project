@@ -1,4 +1,4 @@
-# ci-cd-final-project
+# cicd-final-project
 
 ## CI/CD Tools and Practices Final Project
 
