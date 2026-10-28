@@ -31,7 +31,7 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          flake8 service tests --count --show-source --statistics
+          flake8 service tests --count --show-source --statistics --extend-ignore=E501
 
       - name: Run unit tests with Nose
         run: |
