@@ -1,13 +1,21 @@
+
+## 2. `.github/workflows/workflow.yml`
+
+```yaml
 name: CI Build
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Lint and Unit Test
     runs-on: ubuntu-latest
 
     steps:
