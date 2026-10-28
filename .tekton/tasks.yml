@@ -3,14 +3,33 @@ kind: Task
 metadata:
   name: cleanup
 spec:
-  description: Clean generated files before testing.
+  description: Clean generated files from the source workspace.
+  params:
+    - name: WORKSPACE_SOURCE_PATH
+      type: string
+      description: Path to the source workspace
+      default: /workspace/source
   steps:
-    - name: cleanup
-      image: python:3.9-slim
+    - name: remove
+      image: alpine:3.19
+      env:
+        - name: WORKSPACE_SOURCE_PATH
+          value: $(params.WORKSPACE_SOURCE_PATH)
       script: |
         #!/bin/sh
-        rm -rf .pytest_cache .coverage coverage.xml
-        find . -type d -name __pycache__ -prune -exec rm -rf {} +
+        set -eu
+
+        echo "Cleaning workspace: ${WORKSPACE_SOURCE_PATH}"
+
+        if [ -d "${WORKSPACE_SOURCE_PATH}" ]; then
+          find "${WORKSPACE_SOURCE_PATH}" \
+            -mindepth 1 \
+            -maxdepth 1 \
+            -exec rm -rf {} +
+        else
+          echo "Workspace directory does not exist"
+          exit 1
+        fi
 
 ---
 apiVersion: tekton.dev/v1beta1
@@ -18,14 +37,25 @@ kind: Task
 metadata:
   name: nose
 spec:
-  description: Install dependencies, lint the code, and run Nose unit tests.
+  description: Install dependencies, lint the source, and run Nose tests.
+  params:
+    - name: WORKSPACE_SOURCE_PATH
+      type: string
+      description: Path to the source workspace
+      default: /workspace/source
   steps:
     - name: test
       image: python:3.9-slim
+      workingDir: $(params.WORKSPACE_SOURCE_PATH)
       script: |
         #!/bin/sh
-        set -e
+        set -eu
+
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+        echo "Running Flake8 lint checks"
         flake8 service tests --count --show-source --statistics
+
+        echo "Running Nose unit tests"
         nosetests
