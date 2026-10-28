@@ -1,7 +1,3 @@
-
-## 2. `.github/workflows/workflow.yml`
-
-```yaml
 name: CI Build
 
 on:
